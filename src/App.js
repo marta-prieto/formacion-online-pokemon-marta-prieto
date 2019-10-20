@@ -1,71 +1,73 @@
-import React from 'react';
+import React from "react";
+import fetchPoke from "../src/service/fetchPoke";
+import List from "./PokeList";
+import Filters from "./PokeFilter";
 import './App.css';
-import { fetchPoke } from './service/fetchPoke';
-import PokeFilter from 'Filter';
-import PokeList from 'PokeList';
-
-
 
 class App extends React.Component {
   constructor(props) {
     super(props);
+
     this.state = {
       pokemons: [],
-      charge: false
-    }
-
+      filter: ''
+    };
+    this.getPokemons = this.getPokemons.bind(this);
   }
-
   componentDidMount() {
-    this.getCharacters();
+    this.getPokeData();
   }
 
-  getCharacters = () => {
-    fetchPoke()
-      .then(data => {
-        const pokemonsData = data.results.map((item) => {
-          return fetch(item.url)
-            .then(response => response.json());
-        });
-        return Promise.all(pokemonsData);
-      })
-      .then(membersData => {
-        return (
-          this.setState({
-            pokemons: membersData,
-            charge: true,
-            filterName: ''
-          })
-        );
-      })
+  getPokeData() {
+    fetchPoke().then(data => {
+      for (let pokeData of data.results) {
+        fetch(pokeData.url)
+          .then(response => response.json())
+          .then(pokemons => {
+            const typesArray = [];
+            for (let pokeType of pokemons.types) {
+              typesArray.push(pokeType.type.name);
+            }
+            const pokeInfo = {
+              name: pokeData.name,
+              image: pokemons.sprites.front_default,
+              type: typesArray
+            };
+            this.setState({
+              pokemons: [...this.state.pokemons, pokeInfo]
+            });
+          });
+      }
+    });
   }
-  getFilter = (event) => {
-    const pokeName = event.currentTarget.value;
+
+  getPokemons(event) {
+    const filter = event.currentTarget.value;
     this.setState({
-      filterName: pokeName
-    })
+      filter: filter
+    });
   }
 
   render() {
-/*     const { pokemons, pokeName } = this.state; */
+    const { pokemons, filter } = this.state;
     return (
-      <div className="app">
-        <div className="circle left"></div>
-        <div className="circle right"></div>
-        <div className="triangle left"></div>
-        <div className="triangle right"></div>
-       {/*  <PokeFilter 
-        getFilter = { this.getFilter}
+      <div className="app__container">
+        <Filters
+          filter={filter}
+          pokemons={pokemons}
+          getPokemons={this.getPokemons}
         />
-        <PokeList
-        pokemons = { pokemons }
-        pokeName = { pokeName }
-        /> */}
+        <List 
+        pokemons={pokemons} 
+        filter={filter} />
       </div>
     );
   }
 }
 
-
 export default App;
- 
+
+
+
+
+
