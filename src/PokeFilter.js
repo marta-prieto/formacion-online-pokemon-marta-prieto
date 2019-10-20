@@ -9,7 +9,7 @@ const PokeFilter = props => {
         onChange={getPokemons}
         type="text"
         value={filter}
-        name="pokemon"
+        className="pokemon__input"
         placeholder="Filtra pokemons por nombre..."
       />
     </label>
